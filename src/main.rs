@@ -26,13 +26,14 @@ use crate::error::Error;
 use colored::Colorize;
 use std::process;
 
+mod cargo;
 mod error;
 
 /// Try to execute the whole program or return at the first error.
 ///
 /// On success, the function returns the program output.
 fn try_main() -> Result<String, Error> {
-    Err(Error::NotACrate)
+    Ok(format!("{:?}", cargo::root()?))
 }
 
 /// The program entry point.
