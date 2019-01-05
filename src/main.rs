@@ -23,17 +23,32 @@
 extern crate colored;
 
 use crate::error::Error;
+use crate::mode::Mode;
 use colored::Colorize;
+use std::env;
 use std::process;
 
 mod cargo;
 mod error;
+mod mode;
 
 /// Try to execute the whole program or return at the first error.
 ///
 /// On success, the function returns the program output.
 fn try_main() -> Result<String, Error> {
-    Ok(format!("{:?}", cargo::root()?))
+    let mode = Mode::new();
+
+    change_directory()?;
+    mode.build_binary()?;
+
+    Ok(format!("{:?}", mode.binary()?))
+}
+
+/// Changes the current working directory to the crate root if possible.
+fn change_directory() -> Result<(), Error> {
+    env::set_current_dir(cargo::root()?)?;
+
+    Ok(())
 }
 
 /// The program entry point.

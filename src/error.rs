@@ -9,6 +9,11 @@ pub enum Error {
     NotACrate,
     /// The crate has an invalid `Cargo.toml` file.
     InvalidManifest,
+    /// The cargo build did not succeed.
+    BuildError,
+    /// The binary is not found, although just built. Maybe it is in an unknown
+    /// subdirectory
+    BinaryNotFound,
     /// An I/O error
     IoError(io::Error),
 }
@@ -19,6 +24,8 @@ impl Display for Error {
             Error::InvalidManifest => {
                 write!(f, "Cargo.toml is invalid, aborting.")
             }
+            Error::BuildError => write!(f, "Build did not succeed, aborting."),
+            Error::BinaryNotFound => write!(f, "The binary could not be found"),
             Error::IoError(e) => write!(f, "I/O error ({})", e),
         }
     }
@@ -33,6 +40,8 @@ impl PartialEq for Error {
         match (self, other) {
             (Error::NotACrate, Error::NotACrate) => true,
             (Error::IoError(_), Error::IoError(_)) => true,
+            (Error::BuildError, Error::BuildError) => true,
+            (Error::BinaryNotFound, Error::BinaryNotFound) => true,
             _ => false,
         }
     }
