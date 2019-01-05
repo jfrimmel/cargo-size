@@ -20,7 +20,39 @@
 //! binary if necessary and prints its size.
 //!
 //! If the file `memory.x` is not found the percentages are omitted.
+extern crate colored;
 
+use crate::error::Error;
+use colored::Colorize;
+use std::process;
+
+mod error;
+
+/// Try to execute the whole program or return at the first error.
+///
+/// On success, the function returns the program output.
+fn try_main() -> Result<String, Error> {
+    Err(Error::NotACrate)
+}
+
+/// The program entry point.
+///
+/// This function executes `try_main()` and prints its result state. In case of
+/// success, the output is written to `stdout` with `Printing` in front of it to
+/// mimic the usual cargo behavior. The program exits with the status code `0`.
+///
+/// In case of an error, the error is printed to `stderr` prefixed with a red
+/// _Error_ in front of it to mimic the cargo behavior. The program exits with
+/// the status code `1`.
 fn main() {
-    unimplemented!();
+    match try_main() {
+        Ok(output) => {
+            println!("{:>12} {}", "Printing".bright_green().bold(), output);
+            process::exit(0);
+        }
+        Err(e) => {
+            eprintln!("{:>12} {}", "Error".bright_red().bold(), e);
+            process::exit(1);
+        }
+    }
 }
