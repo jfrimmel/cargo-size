@@ -1,0 +1,8 @@
+"max_width" = 80
+"comment_width" = 80
+"wrap_comments" = true
+"match_arm_blocks" = false
+"format_doc_comments" = true
+"overflow_delimited_expr" = true
+"format_strings" = true
+"merge_imports" = true
