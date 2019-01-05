@@ -12,8 +12,8 @@
 //! $ cargo size
 //! Memory Usage
 //! ------------
-//! Program:    7420 bytes (23.4% Full)
-//! Data:          8 bytes (1.2% Full)
+//! Program:    7420 bytes (23.4% full)
+//! Data:          8 bytes (1.2% full)
 //! ```
 //!
 //! The command `cargo size --release` does the same, but builds the release
@@ -22,11 +22,14 @@
 //! If the file `memory.x` is not found the percentages are omitted.
 extern crate colored;
 extern crate elf;
+extern crate ldscript_parser;
 
 use crate::error::Error;
 use crate::mode::Mode;
 use colored::Colorize;
+use ldscript_parser::RootItem::Memory;
 use std::env;
+use std::fs;
 use std::process;
 
 mod binary;
@@ -45,13 +48,25 @@ fn try_main() -> Result<String, Error> {
     let binary = mode.binary()?;
     let (code, data) = binary::read_size_from(&binary)?;
 
-    Ok(format!(
-        "Memory Usage
+    if let Some((code_memory, data_memory)) = memory_size() {
+        let code_percentage = code as f32 / code_memory as f32 * 100.0;
+        let data_percentage = data as f32 / data_memory as f32 * 100.0;
+        Ok(format!(
+            "Memory Usage
+             ------------
+             Program: {:>7} bytes ({:.1}% full)
+             Data:    {:>7} bytes ({:.1}% full)",
+            code, code_percentage, data, data_percentage
+        ))
+    } else {
+        Ok(format!(
+            "Memory Usage
              ------------
              Program: {:>7} bytes
              Data:    {:>7} bytes",
-        code, data
-    ))
+            code, data
+        ))
+    }
 }
 
 /// Changes the current working directory to the crate root if possible.
@@ -59,6 +74,45 @@ fn change_directory() -> Result<(), Error> {
     env::set_current_dir(cargo::root()?)?;
 
     Ok(())
+}
+
+/// Read the file `memory.x` if present and return the program and data memory
+/// size.
+///
+/// If the file does not exist or has an invalid format, `None` is returned. To
+/// be valid, there have to be two sections present in the memory section, which
+/// are named `flash` and `ram` (case is ignored).
+fn memory_size() -> Option<(u64, u64)> {
+    fs::read_to_string("memory.x")
+        .ok()
+        .and_then(|content| ldscript_parser::parse(&content).ok())
+        .and_then(|items| {
+            for item in items {
+                match item {
+                    Memory { regions } => return Some(regions),
+                    _ => {}
+                }
+            }
+            None
+        })
+        .and_then(|sections| {
+            let mut code = 0;
+            let mut data = 0;
+            for section in sections {
+                if section.name.to_lowercase() == "flash" {
+                    code += section.length;
+                }
+                if section.name.to_lowercase() == "ram" {
+                    data += section.length;
+                }
+            }
+
+            if code != 0 && data != 0 {
+                Some((code, data))
+            } else {
+                None
+            }
+        })
 }
 
 /// The program entry point.

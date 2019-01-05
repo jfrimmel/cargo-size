@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 colored = "1.6.1"
 elf = "0.0.10"
+ldscript-parser = "0.1.0"
