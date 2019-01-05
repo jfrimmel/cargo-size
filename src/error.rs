@@ -41,7 +41,7 @@ impl From<io::Error> for Error {
     }
 }
 impl From<elf::ParseError> for Error {
-    fn from(e: elf::ParseError) -> Error {
+    fn from(_e: elf::ParseError) -> Error {
         Error::InvalidBinary
     }
 }
