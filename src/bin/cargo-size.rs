@@ -7,6 +7,7 @@ use cargo_size::error::Error;
 use cargo_size::memory_size;
 use cargo_size::mode::Mode;
 use colored::Colorize;
+use std::env;
 use std::process;
 
 /// Try to execute the whole program or return at the first error.
@@ -51,6 +52,31 @@ fn try_main() -> Result<String, Error> {
 /// _Error_ in front of it to mimic the cargo behavior. The program exits with
 /// the status code `1`.
 fn main() {
+    let name = option_env!("CARGO_PKG_NAME").unwrap_or("cargo-size");
+    if env::args().any(|arg| arg == "--help" || arg == "-h") {
+        println!(
+            "{}
+A command extending cargo to print the memory usage of a program
+
+USAGE:
+    cargo size [OPTIONS]
+
+OPTIONS:
+      --release               Print the size of the release binary
+                              (debug if flag is not present)
+      --help                  Print this help screen and exit
+      --version               Print the version number and exit",
+            name
+        );
+
+        process::exit(0);
+    } else if env::args().any(|arg| arg == "--version" || arg == "-v") {
+        let version = option_env!("CARGO_PKG_VERSION").unwrap_or("?.?.?");
+        println!("{} {}", name, version);
+
+        process::exit(0);
+    }
+
     match try_main() {
         Ok(output) => {
             println!("{:>12} {}", "Printing".bright_green().bold(), output);
