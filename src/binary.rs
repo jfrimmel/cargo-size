@@ -1,4 +1,4 @@
-//! A module containaing functions for interacting with binaries.
+//! A module containing functions for interacting with binaries.
 use crate::error::Error;
 use std::path::Path;
 
@@ -20,8 +20,8 @@ pub const DATA_SECTIONS: [&str; 2] = [".bss", ".data"];
 /// [`DATA_SECTIONS`][data] are added up and returned. Non-existing sections
 /// are ignored.
 ///
-/// [program]: const.PROGRAM_SECTIONS.html
-/// [data]: const.DATA_SECTIONS.html
+/// [program]: constant.PROGRAM_SECTIONS.html
+/// [data]: constant.DATA_SECTIONS.html
 pub fn read_size_from(file: &Path) -> Result<(u64, u64), Error> {
     let file = elf::File::open_path(file)?;
 

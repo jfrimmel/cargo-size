@@ -5,6 +5,17 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
+/// The supported cross platform targets.
+///
+/// If compiling for a cross platform, the binary is searched in these
+/// directories. The first match is used.
+pub const SUPPORTED_CROSS_PLATFORMS: [&str; 4] = [
+    "thumbv6m-none-eabi",
+    "thumbv7m-none-eabi",
+    "thumbv7em-none-eabi",
+    "thumbv7em-none-eabihf",
+];
+
 /// The mode of the tool (debug or release).
 pub enum Mode {
     Debug,
@@ -46,12 +57,6 @@ impl Mode {
     /// If the binary can not be found a `BinaryNotFound` error is returned.
     pub fn binary(&self) -> Result<PathBuf, Error> {
         let target_dir = env::current_dir()?.join("target");
-        let other_paths = [
-            "thumbv6m-none-eabi".into(),
-            "thumbv7m-none-eabi".into(),
-            "thumbv7em-none-eabi".into(),
-            "thumbv7em-none-eabihf".into(),
-        ];
         let name = cargo::crate_name()?;
 
         target_dir
@@ -67,7 +72,10 @@ impl Mode {
                 target_dir
                     .read_dir()?
                     .filter_map(|entry| entry.ok())
-                    .find(|entry| other_paths.contains(&entry.file_name()))
+                    .find(|entry| {
+                        SUPPORTED_CROSS_PLATFORMS
+                            .contains(&entry.file_name().to_str().unwrap())
+                    })
                     .map(|entry| entry.path())
                     .map(|entry| {
                         entry.join(match self {

@@ -49,10 +49,11 @@ impl PartialEq for Error {
     fn eq(&self, other: &Error) -> bool {
         match (self, other) {
             (Error::NotACrate, Error::NotACrate) => true,
-            (Error::IoError(_), Error::IoError(_)) => true,
+            (Error::InvalidManifest, Error::InvalidManifest) => true,
             (Error::BuildError, Error::BuildError) => true,
             (Error::BinaryNotFound, Error::BinaryNotFound) => true,
             (Error::InvalidBinary, Error::InvalidBinary) => true,
+            (Error::IoError(_), Error::IoError(_)) => true,
             _ => false,
         }
     }
