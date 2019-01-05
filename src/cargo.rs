@@ -34,9 +34,30 @@ fn contains_manifest(directory: &Path) -> bool {
         .unwrap_or(false)
 }
 
+/// Query the name of the crate.
+///
+/// # Errors
+/// Returns an `IoError` if the `Cargo.toml` could not be found or a
+/// `InvalidManifest` error, if the file does not contain a name property.
+pub fn crate_name() -> Result<String, Error> {
+    let name_line = fs::read_to_string("Cargo.toml")?
+        .lines()
+        .find(|line| line.contains("name"))
+        .map(|line| line.to_string())
+        .ok_or(Error::InvalidManifest)?;
+    Ok(name_line
+        .splitn(2, "=")
+        .last()
+        .ok_or(Error::InvalidManifest)?
+        .trim()
+        .trim_matches('"')
+        .trim()
+        .to_string())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{contains_manifest, env, root, Error};
+    use super::{contains_manifest, crate_name, env, root, Error};
 
     #[test]
     fn crate_root_contains_manifest() {
@@ -57,4 +78,8 @@ mod tests {
         assert_eq!(root().unwrap_err(), Error::NotACrate);
     }
 
+    #[test]
+    fn crate_name_matches() {
+        assert_eq!(crate_name().unwrap(), "cargo-size");
+    }
 }

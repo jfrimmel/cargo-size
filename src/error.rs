@@ -7,6 +7,8 @@ use std::io;
 pub enum Error {
     /// The program was not executed inside a cargo project.
     NotACrate,
+    /// The crate has an invalid `Cargo.toml` file.
+    InvalidManifest,
     /// An I/O error
     IoError(io::Error),
 }
@@ -14,6 +16,9 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
             Error::NotACrate => write!(f, "Not a cargo project, aborting."),
+            Error::InvalidManifest => {
+                write!(f, "Cargo.toml is invalid, aborting.")
+            }
             Error::IoError(e) => write!(f, "I/O error ({})", e),
         }
     }
