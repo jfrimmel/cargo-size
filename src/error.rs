@@ -14,6 +14,8 @@ pub enum Error {
     /// The binary is not found, although just built. Maybe it is in an unknown
     /// subdirectory
     BinaryNotFound,
+    /// The binary was invalid
+    InvalidBinary,
     /// An I/O error
     IoError(io::Error),
 }
@@ -26,6 +28,9 @@ impl Display for Error {
             }
             Error::BuildError => write!(f, "Build did not succeed, aborting."),
             Error::BinaryNotFound => write!(f, "The binary could not be found"),
+            Error::InvalidBinary => {
+                write!(f, "The binary has an invalid format")
+            }
             Error::IoError(e) => write!(f, "I/O error ({})", e),
         }
     }
@@ -35,6 +40,11 @@ impl From<io::Error> for Error {
         Error::IoError(e)
     }
 }
+impl From<elf::ParseError> for Error {
+    fn from(e: elf::ParseError) -> Error {
+        Error::InvalidBinary
+    }
+}
 impl PartialEq for Error {
     fn eq(&self, other: &Error) -> bool {
         match (self, other) {
@@ -42,6 +52,7 @@ impl PartialEq for Error {
             (Error::IoError(_), Error::IoError(_)) => true,
             (Error::BuildError, Error::BuildError) => true,
             (Error::BinaryNotFound, Error::BinaryNotFound) => true,
+            (Error::InvalidBinary, Error::InvalidBinary) => true,
             _ => false,
         }
     }

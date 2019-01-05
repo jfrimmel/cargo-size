@@ -21,6 +21,7 @@
 //!
 //! If the file `memory.x` is not found the percentages are omitted.
 extern crate colored;
+extern crate elf;
 
 use crate::error::Error;
 use crate::mode::Mode;
@@ -28,6 +29,7 @@ use colored::Colorize;
 use std::env;
 use std::process;
 
+mod binary;
 mod cargo;
 mod error;
 mod mode;
@@ -40,8 +42,16 @@ fn try_main() -> Result<String, Error> {
 
     change_directory()?;
     mode.build_binary()?;
+    let binary = mode.binary()?;
+    let (code, data) = binary::read_size_from(&binary)?;
 
-    Ok(format!("{:?}", mode.binary()?))
+    Ok(format!(
+        "Memory Usage
+             ------------
+             Program: {:>7} bytes
+             Data:    {:>7} bytes",
+        code, data
+    ))
 }
 
 /// Changes the current working directory to the crate root if possible.
