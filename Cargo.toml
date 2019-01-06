@@ -8,6 +8,7 @@ description = "a custom command extending 'cargo' to print the memory usage"
 repository = "https://github.com/jfrimmel/cargo-size"
 readme = "README.md"
 keywords = ["cargo", "size", "elf", "sections"]
+license = "MIT"
 
 [dependencies]
 colored = "1.6.1"
